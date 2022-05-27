@@ -10,7 +10,6 @@ from data_base import sqlite_db
 
 class FSMAdmin(StatesGroup):
     task_add = State()
-    task_delete = State()
 
 
 async def command_start(message : types.Message):
@@ -40,9 +39,13 @@ async def load_task(message: types.Message, state: FSMContext):
         data['user_id'] = message.from_user.id
         data['task'] = message.text
 
-    await sqlite_db.sql_add_task(state)
-    await bot.send_message(message.from_user.id,
-                           'Задача добавлена в общий список задач. Вы великолепны!')
+    check_task = await sqlite_db.sql_check(state)
+
+    if check_task:
+        await bot.send_message(message.from_user.id, 'Задача добавлена в общий список задач. Вы великолепны!')
+    else:
+        await bot.send_message(message.from_user.id, 'Ох, такая задача в списке уже имеется.')
+
     await state.finish()
 
 
@@ -54,9 +57,11 @@ async def show_tasks(message : types.Message):
     else:
         counter = 1
 
+        await bot.send_message(message.from_user.id, text='Момент, подгружаем все задачи...')
+
         for task in tasks:
-            await bot.send_message(message.from_user.id, text=f'{counter}: {task[0]}',
-                                   reply_markup=InlineKeyboardMarkup(). \
+            await bot.send_message(message.from_user.id, text=f'{counter} : {task[0]}',
+                                   reply_markup=InlineKeyboardMarkup().
                                    add(InlineKeyboardButton('Отметить выполненной', callback_data=f'del {task[0]}')))
             counter += 1
 
