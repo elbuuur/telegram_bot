@@ -8,7 +8,7 @@ async def on_startup(_):
     sqlite_db.sql_start()
 
 
-from handlers import client, admin, other
+from handlers import client, other
 
 client.register_handlers_client(dp)
 other.register_handlers_other(dp)
